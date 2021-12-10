@@ -1,6 +1,7 @@
 use std::iter::Peekable;
 mod token;
 use token::*;
+
 #[derive(Debug)]
 pub enum LexerError {
     UnexpectedCharacter,
