@@ -1,6 +1,7 @@
 use std::iter::Peekable;
 mod token;
 use token::*;
+
 #[derive(Debug)]
 pub enum LexerError {
     UnexpectedCharacter,
@@ -28,14 +29,12 @@ impl<'a> Lexer<'a> {
         while let Some(&c) = iter.peek() {
             match c {
                 '0'..='9' => {
-                    iter.next(); 
-                    let n = get_value(c, &mut iter);
+                    let n = get_value(&mut iter);
                     let tok = Token::new_val(n);
                     self.tokens.push(tok);
-                },
+                }
                 '-' => {
-                    let n = get_value_with_minus(&mut iter);
-                    match n {
+                    match get_value_with_minus(&mut iter) {
                         Some(v) => self.tokens.push(Token::new_val(v)),
                         None => self.tokens.push(Token::new(TokenKind::Minus(0))),
                     }
@@ -43,15 +42,15 @@ impl<'a> Lexer<'a> {
                 '+' => {
                     self.tokens.push(Token::new(TokenKind::Plus(0)));
                     iter.next();
-                },
+                }
                 '*' => {
                     self.tokens.push(Token::new(TokenKind::Mul(0)));
                     iter.next();
-                },
+                }
                 '/' => {
                     self.tokens.push(Token::new(TokenKind::Div(0)));
                     iter.next();
-                },
+                }
                 '!' => {
                     iter.next();
                     if next_is_equal(&mut iter) {
@@ -64,7 +63,6 @@ impl<'a> Lexer<'a> {
                     self.tokens.push(Token::new(TokenKind::Eq(0)));
                     iter.next();
                 }
-
                 _ if is_whitespace(c) => { iter.next(); }
                 _ => todo!()
             }
@@ -73,20 +71,16 @@ impl<'a> Lexer<'a> {
     }
 }
 
-fn get_value<T: Iterator<Item = char>>(c: char, iter: &mut Peekable<T>) -> f64 {
-    let mut buf  = String::from(c);
+fn get_value<T: Iterator<Item = char>>(iter: &mut Peekable<T>) -> f64 {
     let number = iter.take_while(|c| matches!(c, '0'..='9' | '.')).collect::<String>();
-    buf.push_str(&number);
-    buf.parse::<f64>().unwrap()
+    number.parse::<f64>().unwrap()
 }
 
 fn get_value_with_minus<T:Iterator<Item = char>>(iter:&mut Peekable<T>) -> Option<f64> {
-    let mut buf = String::new();
     iter.next();
-    buf.push('-');
     let number = iter.take_while(|c| matches!(c, '0'..='9' | '.')).collect::<String>();
-    if number.is_empty() { return None } else { buf.push_str(&number); }
-    Some(buf.parse::<f64>().unwrap())
+    if number.is_empty() { return None } 
+    Some(number.parse::<f64>().unwrap() * -1.0)
 }
 
 #[cfg(test)]
@@ -101,7 +95,6 @@ mod tests {
         lexer.tokens.iter().zip(tokens.iter())
             .for_each(|(self_tok , test_tok)| assert_eq!(self_tok,test_tok) );
     }
-    
 
     #[test]
     fn operators_test() {
@@ -113,7 +106,6 @@ mod tests {
             Token::new(TokenKind::Not(0)),
             Token::new(TokenKind::Eq(0)),
         ];
-        
         test_lexer("- + * / != =", &tokens)
     } 
 
@@ -122,12 +114,12 @@ mod tests {
         let tokens = vec![
             Token::new_val(-69.5),
             Token::new(TokenKind::Plus(0)),
-            Token::new_val(420.3123),
+            Token::new_val(-420.3123),
             Token::new(TokenKind::Minus(0)),
             Token::new_val(228.1),
             Token::new(TokenKind::Mul(0)),
             Token::new_val(322.0),
         ];
-        test_lexer("-69.5 + 420.3123 - 228.1 * 322",&tokens);
+        test_lexer("-69.5 + -420.3123 - 228.1 * 322",&tokens);
     }
 }
