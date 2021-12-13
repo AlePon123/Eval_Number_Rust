@@ -29,9 +29,7 @@ impl<'a> Lexer<'a> {
         while let Some(&c) = iter.peek() {
             match c {
                 '0'..='9' => {
-                    let n = get_value(&mut iter);
-                    let tok = Token::new_val(n);
-                    self.tokens.push(tok);
+                    self.tokens.push(Token::new_val(get_value(&mut iter)));
                 }
                 '-' => {
                     match get_value_with_minus(&mut iter) {
