@@ -1,9 +1,12 @@
-mod Value;
-mod Lexer;
+pub mod lexer;
+pub mod token;
+pub mod error;
+
 fn main() {
-    let mut lexer = Lexer::Lexer::new("-228.1");
+    let input = String::from("228.1");
+    let mut lexer = lexer::Lexer::new(&input);
     if let Err(why) = lexer.lex(){
-        println!("{:?}",why);
+        println!("Error: {}",why);
     }
-    println!("{:?}",lexer);
+    println!("Tokens: {:?}\n",lexer.tokens,);
 }
